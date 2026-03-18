@@ -12,7 +12,9 @@ import com.chemical.mapper.RoleMapper;
 import com.chemical.repositories.RolePermissionRepository;
 import com.chemical.repositories.RoleRepository;
 import com.chemical.services.RoleService;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -23,30 +25,34 @@ import java.util.Optional;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RoleServiceImplementation implements RoleService {
 
-    private final RoleRepository roleRepository;
-    private final RolePermissionRepository rolePermissionRepository;
-
+    RoleRepository roleRepository;
+    RolePermissionRepository rolePermissionRepository;
+    RoleMapper roleMapper;
 
     @Override
     public List<RoleResponseDTO> getAllRoles() {
-        return roleRepository.findAll().stream().map(RoleMapper::convertToRoleResponse).toList();
+        return roleRepository.findAll().stream().map(roleMapper::convertToRoleResponse).toList();
     }
+
     @Override
     public Role findById(Long roleId) {
-        return roleRepository.findById(roleId).orElseThrow(() -> new RecordNotFoundException(" Not found role with id : " + roleId));
+        return roleRepository.findById(roleId)
+                .orElseThrow(() -> new RecordNotFoundException(" Not found role with id : " + roleId));
     }
+
     @Override
     public RoleResponseDTO findDetailsById(Long roleId) {
-        Optional<Role> roleOptional = roleRepository.findById(roleId);
-        Role role = roleOptional.orElseThrow(() -> new RecordNotFoundException("Role not found with id: " + roleId));
+        Role role = findById(roleId);
 
         List<RolePermission> rolePermissions = rolePermissionRepository.findByRoleId(roleId);
         role.setRolePermissions(rolePermissions);
 
-        return RoleMapper.convertToRoleResponse(role);
+        return roleMapper.convertToRoleResponse(role);
     }
+
     @Override
     public Role save(RoleCreateRequestDTO createRequest) {
         if (roleRepository.findByName(createRequest.getName()).isPresent()) {
@@ -59,7 +65,7 @@ public class RoleServiceImplementation implements RoleService {
             throw new LogicException("Role name's already exist");
         }
 
-        Role role = RoleMapper.convertRoleCreateToRole(createRequest);
+        Role role = roleMapper.convertRoleCreateToRole(createRequest);
 
         role.setName(createRequest.getName());
         role.setSlug(nameToSlug);
@@ -75,14 +81,9 @@ public class RoleServiceImplementation implements RoleService {
     @Override
     public Role update(Long roleId, RoleUpdateRequestDTO updateRequest) {
         Role role = findById(roleId);
-
-        if (role.getId() != roleId) {
-            throw new LogicException("Id is not match");
-        }
-
         String nameToSlug = updateRequest.getName().replaceAll(" ", "-").toLowerCase();
 
-        if (roleRepository.findBySlug(nameToSlug).isPresent()) {
+        if (roleRepository.findBySlug(nameToSlug).isPresent() && !role.getSlug().equals(nameToSlug)) {
             throw new LogicException("Role name's already exist");
         }
 
@@ -92,13 +93,10 @@ public class RoleServiceImplementation implements RoleService {
         role.setUpdated_by("user");
         return roleRepository.save(role);
     }
+
     @Override
     public void delete(Long roleId) {
-        try {
-            roleRepository.deleteById(roleId);
-        } catch (Exception e) {
-            log.debug("Delete role " + e.getMessage());
-            throw new LogicException("Unknown error");
-        }
+        Role role = findById(roleId);
+        roleRepository.delete(role);
     }
 }

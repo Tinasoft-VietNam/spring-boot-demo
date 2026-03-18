@@ -26,27 +26,28 @@ public class RoleController {
     private final RoleService roleService;
 
     @Operation(summary = "Get all roles")
-    @GetMapping("/get-all")
+    @GetMapping
     public BaseResponse<List<RoleResponseDTO>> getAllRoles() {
         List<RoleResponseDTO> roles = roleService.getAllRoles();
         return BaseResponse.ok(roles);
     }
 
     @Operation(summary = "Get role details by ID")
-    @GetMapping("/detail/{id}")
+    @GetMapping("/{id}")
     public BaseResponse<RoleResponseDTO> getDetailRole(@PathVariable("id") Long id) {
         RoleResponseDTO role = roleService.findDetailsById(id);
         return BaseResponse.ok(role);
     }
 
     @Operation(summary = "Create a new role")
-    @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<Role> createRole(@Valid @RequestBody RoleCreateRequestDTO request) {
         Role savedRole = roleService.save(request);
         return BaseResponse.created(savedRole);
     }
+
     @Operation(summary = "Update role details by ID")
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public BaseResponse<Role> updateRole(@PathVariable("id") Long id, @RequestBody RoleUpdateRequestDTO request) {
         log.info("request to update Section with id:  " + id);
         Role updatedRole = roleService.update(id, request);
@@ -54,7 +55,7 @@ public class RoleController {
     }
 
     @Operation(summary = "Delete role by ID")
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public BaseResponse<Void> deleteRole(@PathVariable("id") Long id) {
         log.info("request to update Section with id:  " + id);
         roleService.delete(id);

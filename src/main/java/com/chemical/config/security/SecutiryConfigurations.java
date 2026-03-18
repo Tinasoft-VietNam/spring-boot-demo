@@ -1,6 +1,9 @@
 package com.chemical.config.security;
 
 import com.chemical.common.handler.GlobalExceptionHandler;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,25 +28,18 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
+@FieldDefaults(makeFinal = true,level = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 public class SecutiryConfigurations {
 
-    @Autowired
-    private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-    @Autowired
-    private SecurityFilter securityFilter;
-    @Autowired
-    private GlobalExceptionHandler globalExceptionHandler;
+    CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    SecurityFilter securityFilter;
+    GlobalExceptionHandler globalExceptionHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
-                .cors(cors -> cors.configurationSource(request -> {
-                    CorsConfiguration configuration = new CorsConfiguration();
-                    configuration.setAllowedOrigins(Arrays.asList("*"));
-                    configuration.setAllowedMethods(Arrays.asList("*"));
-                    configuration.setAllowedHeaders(Arrays.asList("*"));
-                    return configuration;
-                }))
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)

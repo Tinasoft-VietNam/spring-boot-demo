@@ -32,7 +32,7 @@ public class User extends BaseEntity implements UserDetails {
     private String password;
 
     @ManyToOne
-    @JoinColumn(name = "role_id")
+    @JoinColumn(name = "role_id", referencedColumnName = "id")
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     @JsonIgnore

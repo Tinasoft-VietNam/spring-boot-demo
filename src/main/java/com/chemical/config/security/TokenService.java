@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.chemical.common.errors.ResourceNotFoundException;
 import com.chemical.entity.User;
 import com.chemical.repositories.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,7 @@ import java.util.Optional;
 public class TokenService {
     @Autowired
     private UserRepository userRepository;
-    @Value("Y7dQGhZdKNERmREIlnQxoJSlLaeozDb6tOwrtONAVTvCqZRjw0oXX2aFUxj6YlGK")
+    @Value("${api.security.token.secret}")
     private String secret;
 
     public String generateToken(User user) {
@@ -56,11 +57,9 @@ public class TokenService {
         if (email == null) {
             return null;
         }
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-        if (optionalUser.isEmpty()) {
-            return null;
-        }
-        User user = optionalUser.get();
+        User user = userRepository.findByEmail(email).orElseThrow(
+                () -> new ResourceNotFoundException("User with email " + email + " not found")
+        );
         return generateToken(user);
     }
 

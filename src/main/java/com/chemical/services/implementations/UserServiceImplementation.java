@@ -14,29 +14,31 @@ import com.chemical.mapper.UserMapper;
 import com.chemical.repositories.RoleRepository;
 import com.chemical.repositories.UserRepository;
 import com.chemical.services.UserService;
-import com.chemical.utils.GetNotNull;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserServiceImplementation implements UserService {
-
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
+    UserRepository userRepository;
+    RoleRepository roleRepository;
+    UserMapper userMapper;
+    PasswordEncoder passwordEncoder;
 
     @Override
     public Page<UserResponseDTO> search(SearchRequest request) {
@@ -44,7 +46,7 @@ public class UserServiceImplementation implements UserService {
         SearchSpecification<User> specification = new SearchSpecification<>(request);
         Page<User> userPage = userRepository.findAll(specification, pageable);
         List<UserResponseDTO> userSearchResponses = userPage.getContent().stream()
-                .map(UserMapper::convertToUserResponse).toList();
+                .map(userMapper::convertToUserResponse).toList();
         return new PageImpl<>(userSearchResponses, pageable, userPage.getTotalElements());
     }
 
@@ -54,9 +56,9 @@ public class UserServiceImplementation implements UserService {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new ConflictException("User's already exist");
         }
-
-        Role role = roleRepository.findById(request.getRoleId()).orElseThrow(() -> new RecordNotFoundException("Không tìm thấy vai trò: " + request.getRoleId()));
-        User user = UserMapper.userCreateRequestConvertToUser(request);
+        Role role = roleRepository.findById(request.getRoleId())
+                .orElseThrow(() -> new RecordNotFoundException("Không tìm thấy vai trò: " + request.getRoleId()));
+        User user = userMapper.userCreateRequestConvertToUser(request);
 
         log.info("this is role: " + role);
         user.setRole(role);
@@ -84,52 +86,42 @@ public class UserServiceImplementation implements UserService {
         User user = userRepository.findByEmail(finalEmail)
                 .orElseThrow(() -> new RecordNotFoundException("Not found event with email: " + finalEmail));
 
-        return UserMapper.convertToUserResponse(user);
+        return userMapper.convertToUserResponse(user);
     }
-
 
     @Override
     public List<UserResponseDTO> getAllUsers() {
-        return userRepository.findAll().stream().map(UserMapper::convertToUserResponse).toList();
+        return userRepository.findAll().stream().map(userMapper::convertToUserResponse).toList();
     }
 
     public UserResponseDTO findByEmailAuth(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RecordNotFoundException("Không tìm thấy người dùng với: " + email));
-        UserResponseDTO currentUser = UserMapper.convertToUserResponse(user);
-        return currentUser;
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RecordNotFoundException("Không tìm thấy người dùng với: " + email));
+        return userMapper.convertToUserResponse(user);
     }
 
     @Override
     public User update(Long userId, UserUpdateRequestDTO updateRequest) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            if (!user.getId().equals(userId)) {
-                throw new LogicException("Id không đúng định dạng");
-            }
-            Role role = roleRepository.findById(updateRequest.getRoleId()).orElseThrow(() -> new RecordNotFoundException("Không tìm thấy vai trò: " + updateRequest.getRoleId()));
-            if (role != null) {
-                String roleName = role.getName();
-                if (roleName != null) {
-                    Role foundRole = roleRepository.findByName(roleName).orElse(null);
-                    if (foundRole != null) {
-                        user.setRole(foundRole);
-                    } else {
-                        throw new IllegalArgumentException("Tên vai trò không tồn tại: " + roleName);
-                    }
-                } else {
-                    throw new IllegalArgumentException("Vai trò không được rỗng");
-                }
-            } else {
-                throw new IllegalArgumentException("Không tìm thấy vai trò");
-            }
-            BeanUtils.copyProperties(updateRequest, user, GetNotNull.getNullPropertyNames(updateRequest));
-            user.setUpdated_by("user");
-            user.setUpdated_at(new Date());
-            return userRepository.save(user);
-        } else {
-            throw new RecordNotFoundException("Người dùng không được tìm thấy");
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RecordNotFoundException("Không tìm thấy người dùng id = " + userId));
+
+        userMapper.userUpdateRequestConvertToUser(user, updateRequest);
+
+        if (updateRequest.getRoleId() != null) {
+            Role role = roleRepository.findById(updateRequest.getRoleId())
+                    .orElseThrow(
+                            () -> new RecordNotFoundException("Không tìm thấy vai trò: " + updateRequest.getRoleId()));
+            user.setRole(role);
         }
+        if (updateRequest.getPassword() != null && !updateRequest.getPassword().trim().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(updateRequest.getPassword()));
+        }
+
+        user.setUpdated_by("user");
+        user.setUpdated_at(new Date());
+
+        return userRepository.save(user);
+
     }
 
     @Override

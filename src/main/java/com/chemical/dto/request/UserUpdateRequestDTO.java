@@ -1,6 +1,5 @@
 package com.chemical.dto.request;
 
-import com.chemical.entity.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

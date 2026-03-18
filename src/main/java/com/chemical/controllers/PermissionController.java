@@ -23,13 +23,14 @@ public class PermissionController {
     private final PermissionService permissionService;
 
     @Operation(summary = "Get all permissions")
-    @GetMapping("/get-all")
+    @GetMapping
     public BaseResponse<List<PermissionResponseDTO>> getAllPermissions() {
         List<PermissionResponseDTO> permissions = permissionService.getAllPermissions();
         return BaseResponse.ok(permissions);
     }
+
     @Operation(summary = "Update permission details by ID")
-    @PatchMapping("/update/{id}")
+    @PatchMapping("/{id}")
     public BaseResponse<Role> updatePermission(@PathVariable("id") Long id, @RequestBody RoleUpdateRequestDTO request) {
         log.info("request to update Section with id:  " + id);
         return BaseResponse.ok();

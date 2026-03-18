@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 @Slf4j
 @Tag(name = "User Controller", description = "Endpoints for managing users")
 @RestController
@@ -25,12 +26,15 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+
     @Operation(summary = "Search users with pagination")
     @PostMapping("/search")
     public BasePaginationResponse<List<UserResponseDTO>> searchUser(@RequestBody SearchRequest request) {
         Page<UserResponseDTO> page = userService.search(request);
-        return BasePaginationResponse.ok(page.getContent(), request.getPage(), page.getTotalPages(), (int) page.getTotalElements());
+        return BasePaginationResponse.ok(page.getContent(), request.getPage(), page.getTotalPages(),
+                (int) page.getTotalElements());
     }
+
     @Operation(summary = "Get details of the currently authenticated user")
     @GetMapping("/current-user")
     public BaseResponse<UserResponseDTO> getCurrentUser() throws Exception {
@@ -43,13 +47,12 @@ public class UserController {
     }
 
     @Operation(summary = "Get all users")
-    @GetMapping("/get-all")
+    @GetMapping
     public BaseResponse<List<UserResponseDTO>> getAllUsers() {
         List<UserResponseDTO> users = userService.getAllUsers();
         return BaseResponse.ok(users);
     }
 
-    @Operation(summary = "Update user details by ID")
     @PutMapping("/update/{id}")
     public BaseResponse<User> updateUser(@PathVariable("id") Long id, @RequestBody UserUpdateRequestDTO request) {
         log.info("request to update Section with id:  " + id);
@@ -58,7 +61,7 @@ public class UserController {
     }
 
     @Operation(summary = "Delete user by ID")
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public BaseResponse<Void> deleteUser(@PathVariable("id") Long id) {
         log.info("request to update Section with id:  " + id);
         userService.delete(id);

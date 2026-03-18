@@ -36,11 +36,12 @@ public class SearchSpecification<T> implements Specification<T> {
 
     public static Pageable getPageable(Integer page, Integer size) {
         if (page == null || size == null) {
-            return PageRequest.of(1, 100);
+            return PageRequest.of(0, 10);
         }
 
         return PageRequest.of(page, size);
     }
+
     @Override
     public String toString() {
         return "SearchSpecification{" +
