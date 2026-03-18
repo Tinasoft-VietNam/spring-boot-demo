@@ -36,11 +36,13 @@ public class RoleServiceImplementation implements RoleService {
     public List<RoleResponseDTO> getAllRoles() {
         return roleRepository.findAll().stream().map(roleMapper::convertToRoleResponse).toList();
     }
+
     @Override
     public Role findById(Long roleId) {
         return roleRepository.findById(roleId)
                 .orElseThrow(() -> new RecordNotFoundException(" Not found role with id : " + roleId));
     }
+
     @Override
     public RoleResponseDTO findDetailsById(Long roleId) {
         Role role = findById(roleId);
@@ -50,6 +52,7 @@ public class RoleServiceImplementation implements RoleService {
 
         return roleMapper.convertToRoleResponse(role);
     }
+
     @Override
     public Role save(RoleCreateRequestDTO createRequest) {
         if (roleRepository.findByName(createRequest.getName()).isPresent()) {
@@ -80,7 +83,7 @@ public class RoleServiceImplementation implements RoleService {
         Role role = findById(roleId);
         String nameToSlug = updateRequest.getName().replaceAll(" ", "-").toLowerCase();
 
-        if (roleRepository.findBySlug(nameToSlug).isPresent()) {
+        if (roleRepository.findBySlug(nameToSlug).isPresent() && !role.getSlug().equals(nameToSlug)) {
             throw new LogicException("Role name's already exist");
         }
 
@@ -90,6 +93,7 @@ public class RoleServiceImplementation implements RoleService {
         role.setUpdated_by("user");
         return roleRepository.save(role);
     }
+
     @Override
     public void delete(Long roleId) {
         Role role = findById(roleId);

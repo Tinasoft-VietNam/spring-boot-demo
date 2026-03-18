@@ -14,12 +14,10 @@ import com.chemical.mapper.UserMapper;
 import com.chemical.repositories.RoleRepository;
 import com.chemical.repositories.UserRepository;
 import com.chemical.services.UserService;
-import com.chemical.utils.GetNotNull;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -31,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -59,8 +56,8 @@ public class UserServiceImplementation implements UserService {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new ConflictException("User's already exist");
         }
-
-        Role role = roleRepository.findById(request.getRoleId()).orElseThrow(() -> new RecordNotFoundException("Không tìm thấy vai trò: " + request.getRoleId()));
+        Role role = roleRepository.findById(request.getRoleId())
+                .orElseThrow(() -> new RecordNotFoundException("Không tìm thấy vai trò: " + request.getRoleId()));
         User user = userMapper.userCreateRequestConvertToUser(request);
 
         log.info("this is role: " + role);
@@ -92,14 +89,14 @@ public class UserServiceImplementation implements UserService {
         return userMapper.convertToUserResponse(user);
     }
 
-
     @Override
     public List<UserResponseDTO> getAllUsers() {
         return userRepository.findAll().stream().map(userMapper::convertToUserResponse).toList();
     }
 
     public UserResponseDTO findByEmailAuth(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RecordNotFoundException("Không tìm thấy người dùng với: " + email));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RecordNotFoundException("Không tìm thấy người dùng với: " + email));
         return userMapper.convertToUserResponse(user);
     }
 
@@ -112,13 +109,13 @@ public class UserServiceImplementation implements UserService {
 
         if (updateRequest.getRoleId() != null) {
             Role role = roleRepository.findById(updateRequest.getRoleId())
-                    .orElseThrow(() -> new RecordNotFoundException("Không tìm thấy vai trò: " + updateRequest.getRoleId()));
+                    .orElseThrow(
+                            () -> new RecordNotFoundException("Không tìm thấy vai trò: " + updateRequest.getRoleId()));
             user.setRole(role);
         }
         if (updateRequest.getPassword() != null && !updateRequest.getPassword().trim().isEmpty()) {
             user.setPassword(passwordEncoder.encode(updateRequest.getPassword()));
         }
-
 
         user.setUpdated_by("user");
         user.setUpdated_at(new Date());
