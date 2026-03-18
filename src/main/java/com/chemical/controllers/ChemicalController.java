@@ -8,6 +8,8 @@ import com.chemical.dto.request.ChemicalUpdateRequestDTO;
 import com.chemical.dto.response.ChemicalResponseDTO;
 import com.chemical.entity.Chemical;
 import com.chemical.services.ChemicalService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @Slf4j
+@Tag(name = "Chemical Controller", description = "Endpoints for managing chemicals")
 @RestController
 @RequestMapping("/api/chemical")
 @RequiredArgsConstructor
@@ -25,29 +28,34 @@ import java.util.List;
 public class ChemicalController {
     public  final ChemicalService chemicalService;
 
+    @Operation(summary = "Search chemicals with pagination")
     @PostMapping("/search")
     public BasePaginationResponse<List<ChemicalResponseDTO>> searchChemical(@RequestBody SearchRequest request) {
         Page<ChemicalResponseDTO> page = chemicalService.search(request);
         return BasePaginationResponse.ok(page.getContent(), request.getPage(), page.getTotalPages(), (int) page.getTotalElements());
     }
+    @Operation(summary = "Get all chemicals")
     @GetMapping("/get-all")
     public BaseResponse<List<ChemicalResponseDTO>> getAllChemicals() {
         List<ChemicalResponseDTO> chemicals = chemicalService.getAllChemicals();
         return BaseResponse.ok(chemicals);
     }
 
+    @Operation(summary = "Get chemical details by ID")
     @GetMapping("/detail/{id}")
     public BaseResponse<ChemicalResponseDTO> getDetailChemical(@PathVariable("id") Long id) {
         ChemicalResponseDTO chemical = chemicalService.findDetailsById(id);
         return BaseResponse.ok(chemical);
     }
 
+    @Operation(summary = "Create a new chemical")
     @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<Chemical> createChemical(@Valid @RequestBody ChemicalCreateRequestDTO request) {
         Chemical savedChemical = chemicalService.save(request);
         return BaseResponse.created(savedChemical);
     }
 
+    @Operation(summary = "Update chemical details by ID")
     @PutMapping("/update/{id}")
     public BaseResponse<Chemical> updateChemical(@PathVariable("id") Long id, @RequestBody ChemicalUpdateRequestDTO request) {
         log.info("request to update customer with id:  " + id);
@@ -55,6 +63,7 @@ public class ChemicalController {
         return BaseResponse.ok(updatedChemical);
     }
 
+    @Operation(summary = "Delete chemical by ID")
     @DeleteMapping("/delete/{id}")
     public BaseResponse<Void> deleteChemical(@PathVariable("id") Long id) {
         log.info("request to delete chemical with id:  " + id);
