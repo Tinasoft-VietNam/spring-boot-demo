@@ -12,7 +12,9 @@ import com.chemical.mapper.ChemicalMapper;
 import com.chemical.repositories.ChemicalRepository;
 import com.chemical.services.ChemicalService;
 import com.chemical.utils.GetNotNull;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
@@ -26,44 +28,45 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ChemicalServiceImplementation implements ChemicalService {
 
-    private final ChemicalRepository chemicalRepository;
+    ChemicalRepository chemicalRepository;
+    ChemicalMapper chemicalMapper;
 
     @Override
     public Page<ChemicalResponseDTO> search(SearchRequest request) {
         Pageable pageable = SearchSpecification.getPageable(request.getPage(), request.getSize());
         SearchSpecification<Chemical> specification = new SearchSpecification<>(request);
         Page<Chemical> chemicalPage = chemicalRepository.findAll(specification, pageable);
-        List<ChemicalResponseDTO> chemicalSearchResponses = chemicalPage.getContent().stream()
-                .map(ChemicalMapper::convertToChemicalResponse).toList();
+        List<ChemicalResponseDTO> chemicalSearchResponses = chemicalMapper.toDtoList(chemicalPage.getContent());
         return new PageImpl<>(chemicalSearchResponses, pageable, chemicalPage.getTotalElements());
     }
 
     @Override
     public List<ChemicalResponseDTO> getAllChemicals() {
-        return chemicalRepository.findAll().stream().map(ChemicalMapper::convertToChemicalResponse).toList();
+        return chemicalMapper.toDtoList(chemicalRepository.findAll());
     }
 
     @Override
     public Chemical findById(Long chemicalId) {
         return chemicalRepository.findById(chemicalId).orElseThrow(() -> new RecordNotFoundException(" Not found chemical with id : " + chemicalId));
     }
+
     @Override
     public ChemicalResponseDTO findDetailsById(Long chemicalId) {
         Chemical chemical = findById(chemicalId);
-        return ChemicalMapper.convertToChemicalResponse(chemical);
+        return chemicalMapper.toDto(chemical);
     }
 
     @Override
     public Chemical save(ChemicalCreateRequestDTO createRequest) {
-        Chemical chemical = ChemicalMapper.convertChemicalCreateToChemical(createRequest);
+        Chemical chemical = chemicalMapper.toEntity(createRequest);
 
         chemical.setCreated_by("user");
         chemical.setUpdated_by("user");
         chemical.setCreated_at(new Date());
         chemical.setUpdated_at(new Date());
-        log.info("save chemical in service: " + chemical);
 
         return chemicalRepository.save(chemical);
     }
@@ -71,14 +74,12 @@ public class ChemicalServiceImplementation implements ChemicalService {
     @Override
     public Chemical update(Long chemicalId, ChemicalUpdateRequestDTO updateRequest) {
         Chemical chemical = findById(chemicalId);
-        if (chemical.getId() != chemicalId) {
-            throw new LogicException("Id is not match");
-        }
 
-        BeanUtils.copyProperties(updateRequest, chemical, GetNotNull.getNullPropertyNames(updateRequest));
+        chemicalMapper.updateEntity(updateRequest, chemical);
 
         chemical.setUpdated_at(new Date());
         chemical.setUpdated_by("user");
+
         return chemicalRepository.save(chemical);
     }
 

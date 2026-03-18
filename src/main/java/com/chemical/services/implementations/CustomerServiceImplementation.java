@@ -12,7 +12,9 @@ import com.chemical.dto.response.CustomerResponseDTO;
 import com.chemical.mapper.CustomerMapper;
 import com.chemical.repositories.CustomerRepository;
 import com.chemical.utils.GetNotNull;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
@@ -26,9 +28,11 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CustomerServiceImplementation implements CustomerService {
 
-    private final CustomerRepository customerRepository;
+    CustomerRepository customerRepository;
+    CustomerMapper customerMapper;
 
     @Override
     public Page<CustomerResponseDTO> search(SearchRequest request) {
@@ -36,13 +40,13 @@ public class CustomerServiceImplementation implements CustomerService {
         SearchSpecification<Customer> specification = new SearchSpecification<>(request);
         Page<Customer> customerPage = customerRepository.findAll(specification, pageable);
         List<CustomerResponseDTO> customerSearchResponses = customerPage.getContent().stream()
-                .map(CustomerMapper::convertToCustomerResponse).toList();
+                .map(customerMapper::toCustomerResponseDTO).toList();
         return new PageImpl<>(customerSearchResponses, pageable, customerPage.getTotalElements());
     }
 
     @Override
     public List<CustomerResponseDTO> getAllCustomers() {
-        return customerRepository.findAll().stream().map(CustomerMapper::convertToCustomerResponse).toList();
+        return customerRepository.findAll().stream().map(customerMapper::toCustomerResponseDTO).toList();
     }
 
     @Override
@@ -52,12 +56,12 @@ public class CustomerServiceImplementation implements CustomerService {
     @Override
     public CustomerResponseDTO findDetailsById(Long customerId) {
         Customer customer = findById(customerId);
-        return CustomerMapper.convertToCustomerResponse(customer);
+        return customerMapper.toCustomerResponseDTO(customer);
     }
 
     @Override
     public Customer save(CustomerCreateRequestDTO createRequest) {
-        Customer customer = CustomerMapper.convertCustomerCreateToCustomer(createRequest);
+        Customer customer = customerMapper.convertCustomerRequestToCustomer(createRequest);
 
         customer.setCreated_by("user");
         customer.setUpdated_by("user");

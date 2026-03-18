@@ -37,20 +37,20 @@ public class UserController {
         }
     }
 
-    @GetMapping("/get-all")
+    @GetMapping
     public BaseResponse<List<UserResponseDTO>> getAllUsers() {
         List<UserResponseDTO> users = userService.getAllUsers();
         return BaseResponse.ok(users);
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public BaseResponse<User> updateUser(@PathVariable("id") Long id, @RequestBody UserUpdateRequestDTO request) {
         log.info("request to update Section with id:  " + id);
         User user = userService.update(id, request);
         return BaseResponse.ok(user);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public BaseResponse<Void> deleteUser(@PathVariable("id") Long id) {
         log.info("request to update Section with id:  " + id);
         userService.delete(id);

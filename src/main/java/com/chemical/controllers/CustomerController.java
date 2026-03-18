@@ -30,32 +30,32 @@ public class CustomerController {
         Page<CustomerResponseDTO> page = customerService.search(request);
         return BasePaginationResponse.ok(page.getContent(), request.getPage(), page.getTotalPages(), (int) page.getTotalElements());
     }
-    @GetMapping("/get-all")
+    @GetMapping
     public BaseResponse<List<CustomerResponseDTO>> getAllCustomers() {
         List<CustomerResponseDTO> customers = customerService.getAllCustomers();
         return BaseResponse.ok(customers);
     }
 
-    @GetMapping("/detail/{id}")
+    @GetMapping("/{id}")
     public BaseResponse<CustomerResponseDTO> getDetailCustomer(@PathVariable("id") Long id) {
         CustomerResponseDTO customer = customerService.findDetailsById(id);
         return BaseResponse.ok(customer);
     }
 
-    @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping( consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<Customer> createCustomer(@Valid @RequestBody CustomerCreateRequestDTO request) {
         Customer savedCustomer = customerService.save(request);
         return BaseResponse.created(savedCustomer);
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public BaseResponse<Customer> updateCustomer(@PathVariable("id") Long id, @RequestBody CustomerUpdateRequestDTO request) {
         log.info("request to update customer with id:  " + id);
         Customer updatedCustomer = customerService.update(id, request);
         return BaseResponse.ok(updatedCustomer);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public BaseResponse<Void> deleteCustomer(@PathVariable("id") Long id) {
         log.info("request to delete customer with id:  " + id);
         customerService.delete(id);

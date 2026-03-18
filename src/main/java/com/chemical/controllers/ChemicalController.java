@@ -23,39 +23,40 @@ import java.util.List;
 @RequiredArgsConstructor
 @CrossOrigin("*")
 public class ChemicalController {
-    public  final ChemicalService chemicalService;
+    public final ChemicalService chemicalService;
 
     @PostMapping("/search")
     public BasePaginationResponse<List<ChemicalResponseDTO>> searchChemical(@RequestBody SearchRequest request) {
         Page<ChemicalResponseDTO> page = chemicalService.search(request);
         return BasePaginationResponse.ok(page.getContent(), request.getPage(), page.getTotalPages(), (int) page.getTotalElements());
     }
-    @GetMapping("/get-all")
+
+    @GetMapping
     public BaseResponse<List<ChemicalResponseDTO>> getAllChemicals() {
         List<ChemicalResponseDTO> chemicals = chemicalService.getAllChemicals();
         return BaseResponse.ok(chemicals);
     }
 
-    @GetMapping("/detail/{id}")
+    @GetMapping("/{id}")
     public BaseResponse<ChemicalResponseDTO> getDetailChemical(@PathVariable("id") Long id) {
         ChemicalResponseDTO chemical = chemicalService.findDetailsById(id);
         return BaseResponse.ok(chemical);
     }
 
-    @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<Chemical> createChemical(@Valid @RequestBody ChemicalCreateRequestDTO request) {
         Chemical savedChemical = chemicalService.save(request);
         return BaseResponse.created(savedChemical);
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public BaseResponse<Chemical> updateChemical(@PathVariable("id") Long id, @RequestBody ChemicalUpdateRequestDTO request) {
         log.info("request to update customer with id:  " + id);
         Chemical updatedChemical = chemicalService.update(id, request);
         return BaseResponse.ok(updatedChemical);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     public BaseResponse<Void> deleteChemical(@PathVariable("id") Long id) {
         log.info("request to delete chemical with id:  " + id);
         chemicalService.delete(id);
