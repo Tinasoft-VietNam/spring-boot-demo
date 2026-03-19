@@ -1,6 +1,5 @@
 package com.chemical.config.security;
 
-import com.chemical.common.handler.GlobalExceptionHandler;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -33,7 +32,6 @@ public class SecutiryConfigurations {
 
     CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     SecurityFilter securityFilter;
-    GlobalExceptionHandler globalExceptionHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {

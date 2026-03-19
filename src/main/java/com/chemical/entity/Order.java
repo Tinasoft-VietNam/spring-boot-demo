@@ -13,6 +13,7 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class Order extends BaseEntity implements Serializable {
 
     @Id

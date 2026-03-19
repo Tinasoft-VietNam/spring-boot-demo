@@ -12,6 +12,7 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class ChemicalCategory extends BaseEntity implements Serializable {
 
     @Id

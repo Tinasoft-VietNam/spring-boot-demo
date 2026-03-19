@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class Role extends BaseEntity implements Serializable {
 
     @Id

@@ -4,7 +4,6 @@ import com.chemical.common.errors.LogicException;
 import com.chemical.common.errors.RecordNotFoundException;
 import com.chemical.dto.request.RoleCreateRequestDTO;
 import com.chemical.dto.request.RoleUpdateRequestDTO;
-import com.chemical.dto.response.PermissionResponseDTO;
 import com.chemical.dto.response.RoleResponseDTO;
 import com.chemical.entity.Role;
 import com.chemical.entity.RolePermission;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Slf4j

@@ -1,7 +1,6 @@
 package com.chemical.mapper;
 
 import com.chemical.dto.response.PermissionResponseDTO;
-import com.chemical.entity.Permission;
 import com.chemical.entity.RolePermission;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

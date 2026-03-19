@@ -17,11 +17,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,7 +44,7 @@ public class AuthenticationController {
      */
     @Operation(summary = "Authenticate user and return tokens")
     @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResponse login(@RequestBody AuthenticationDTO data) {
+    public BaseResponse<LoginResponseDTO> login(@RequestBody AuthenticationDTO data) {
         var credentials = new UsernamePasswordAuthenticationToken(data.email(), data.password());
         var auth = this.authenticationManager.authenticate(credentials);
         var token = tokenService.generateToken((User) auth.getPrincipal());

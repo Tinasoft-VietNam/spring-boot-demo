@@ -1,6 +1,5 @@
 package com.chemical.dto.response;
 
-import com.chemical.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
