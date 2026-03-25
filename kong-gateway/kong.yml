@@ -1,0 +1,13 @@
+_format_version: "3.0"
+services:
+    - name: user-service
+      url: http://host.docker.internal:9001
+      routes:
+          - name: user-service-route
+            paths:
+                - /api/auth
+                - /api/user
+                - /api/role
+                - /api/permission
+                - /api/profile
+            strip_path: false
