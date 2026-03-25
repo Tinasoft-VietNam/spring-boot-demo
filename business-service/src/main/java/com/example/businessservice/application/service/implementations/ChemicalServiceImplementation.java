@@ -17,6 +17,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Date;
 import java.util.List;
@@ -58,8 +61,8 @@ public class ChemicalServiceImplementation implements ChemicalService {
     public Chemical save(Chemical chemical) {
         ChemicalJpaEntity entity = ChemicalPersistenceMapper.toEntity(chemical);
 
-        entity.setCreated_by("user");
-        entity.setUpdated_by("user");
+        entity.setCreated_by(getCurrentEmail());
+        entity.setUpdated_by(getCurrentEmail());
         entity.setCreated_at(new Date());
         entity.setUpdated_at(new Date());
         log.info("save chemical in service: " + entity);
@@ -78,7 +81,7 @@ public class ChemicalServiceImplementation implements ChemicalService {
         BeanUtils.copyProperties(chemical, entity, GetNotNull.getNullPropertyNames(chemical));
 
         entity.setUpdated_at(new Date());
-        entity.setUpdated_by("user");
+        entity.setUpdated_by(getCurrentEmail());
         return ChemicalPersistenceMapper.toDomain(chemicalRepository.save(entity));
     }
 
@@ -90,5 +93,19 @@ public class ChemicalServiceImplementation implements ChemicalService {
             log.debug("Delete chemical " + e.getMessage());
             throw new LogicException("Unknown error");
         }
+    }
+
+    private String getCurrentEmail() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            throw new RecordNotFoundException("Authentication is missing");
+        }
+
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetails userDetails) {
+            return userDetails.getUsername();
+        }
+
+        return authentication.getName();
     }
 }

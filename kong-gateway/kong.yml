@@ -11,3 +11,15 @@ services:
                 - /api/permission
                 - /api/profile
             strip_path: false
+
+    - name: business-service
+      url: http://host.docker.internal:9002
+      routes:
+          - name: business-service-customer-route
+            paths:
+                - /api/customer
+            strip_path: false
+          - name: business-service-chemical-route
+            paths:
+                - /api/chemical
+            strip_path: false

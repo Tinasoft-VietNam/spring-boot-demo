@@ -1,0 +1,881 @@
+{
+    "info": {
+        "_postman_id": "Chemical-Management-Microservices-API",
+        "name": "Chemical Management Microservices API Complete Collection",
+        "description": "Complete API testing for user-service and business-service with OAuth2",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Authentication",
+            "item": [
+                {
+                    "name": "Login - Admin",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "const payload = pm.response.json();",
+                                    "const token = payload?.data?.token;",
+                                    "const refreshToken = payload?.data?.refreshToken;",
+                                    "",
+                                    "if (token) {",
+                                    "pm.environment.set('adminAccessToken', token);",
+                                    "}",
+                                    "if (refreshToken) {",
+                                    "pm.environment.set('adminRefreshToken', refreshToken);",
+                                    "}",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"admin@users.local\",\n  \"password\": \"Admin@123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "login"]
+                        }
+                    }
+                },
+                {
+                    "name": "Login - User",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.environment.set('userAccessToken', jsonData.data.token);",
+                                    "    pm.environment.set('userRefreshToken', jsonData.data.refreshToken);",
+                                    "    console.log('✓ User token saved');",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"user@users.local\",\n  \"password\": \"User@123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "login"]
+                        }
+                    }
+                },
+                {
+                    "name": "Register New User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"testuser@users.local\",\n  \"password\": \"Test@123\",\n  \"roleId\": 2\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/register",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "register"]
+                        }
+                    }
+                },
+                {
+                    "name": "Refresh Token",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var payload = pm.response.json();",
+                                    "    var token = payload?.data?.token || payload?.data;",
+                                    "    if (token) {",
+                                    "        pm.environment.set('adminAccessToken', token);",
+                                    "    }",
+                                    "    console.log('✓ Token refreshed');",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminRefreshToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/refresh-token",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "refresh-token"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "User Management",
+            "item": [
+                {
+                    "name": "Get All Users",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/user",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "user"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get User By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/user/1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "user", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Search Users",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"page\": 0,\n  \"size\": 10,\n  \"sort\": \"id,desc\",\n  \"filter\": []\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/user/search",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "user", "search"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"New User\",\n  \"email\": \"newuser@test.com\",\n  \"password\": \"Pass@123\",\n  \"roleId\": 2,\n  \"avatar\": \"https://via.placeholder.com/150\",\n  \"gender\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/user",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "user"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update User",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Updated Name\",\n  \"email\": \"updated@test.com\",\n  \"password\": \"NewPass@123\",\n  \"roleId\": 2\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/user/3",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "user", "3"]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete User",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/user/3",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "user", "3"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Current User",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/user/current",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "user", "current"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Role Management",
+            "item": [
+                {
+                    "name": "Get All Roles",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/role",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "role"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Role By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/role/1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "role", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Role",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Manager\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/role",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "role"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Role",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Super Manager\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/role/3",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "role", "3"]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Role",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/role/3",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "role", "3"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Permission Management",
+            "item": [
+                {
+                    "name": "Get All Permissions",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/permission",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "permission"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Profile",
+            "item": [
+                {
+                    "name": "Get My Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/profile",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "profile"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update My Profile",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"My New Name\",\n  \"avatar\": \"https://via.placeholder.com/200\",\n  \"gender\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/profile",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "profile"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Business Service - Customer",
+            "item": [
+                {
+                    "name": "Get All Customers",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/customer/get-all",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "customer", "get-all"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Customer By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/customer/detail/1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "customer", "detail", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Search Customers",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"page\": 0,\n  \"size\": 10,\n  \"sort\": \"id,desc\",\n  \"filter\": []\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/customer/search",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "customer", "search"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Customer",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Acme Corporation\",\n  \"email\": \"contact@acme.com\",\n  \"phone_number\": \"+1-555-123-4567\",\n  \"birthday\": \"1990-01-15\",\n  \"address\": \"123 Business Street, New York, NY 10001\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/customer/create",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "customer", "create"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Customer",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Updated Acme Corp\",\n  \"email\": \"newemail@acme.com\",\n  \"phone_number\": \"+1-555-999-8888\",\n  \"address\": \"456 New Street, Los Angeles, CA 90001\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/customer/update/1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "customer", "update", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Customer",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/customer/delete/1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "customer", "delete", "1"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Business Service - Chemical",
+            "item": [
+                {
+                    "name": "Get All Chemicals",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/chemical/get-all",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "chemical", "get-all"]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Chemical By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/chemical/detail/1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "chemical", "detail", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Search Chemicals",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"page\": 0,\n  \"size\": 10,\n  \"sort\": \"id,desc\",\n  \"filter\": []\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/chemical/search",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "chemical", "search"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Chemical",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Sodium Chloride\",\n  \"description\": \"Common table salt\",\n  \"cas_number\": \"7647-14-5\",\n  \"file_path\": \"/docs/nacl.pdf\",\n  \"flash_point\": -1.0,\n  \"storage_temperature_min\": 15.0,\n  \"storage_temperature_max\": 25.0,\n  \"storage_conditions\": \"Cool, dry place\",\n  \"type\": \"Inorganic\",\n  \"unit_of_measure\": \"kg\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/chemical/create",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "chemical", "create"]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Chemical",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Updated Sodium Chloride\",\n  \"description\": \"High purity table salt\",\n  \"storage_conditions\": \"Cool, dry, ventilated place\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/chemical/update/1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "chemical", "update", "1"]
+                        }
+                    }
+                },
+                {
+                    "name": "Delete Chemical",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/chemical/delete/1",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "chemical", "delete", "1"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Test Cases",
+            "item": [
+                {
+                    "name": "Test: Without Token (Should 401)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 401', function () {",
+                                    "    pm.response.to.have.status(401);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/api/customer/get-all",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "customer", "get-all"]
+                        }
+                    }
+                },
+                {
+                    "name": "Test: Invalid Token (Should 401)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Status code is 401', function () {",
+                                    "    pm.response.to.have.status(401);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer invalid.token.here"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/customer/get-all",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "customer", "get-all"]
+                        }
+                    }
+                },
+                {
+                    "name": "Test: Admin Can Access",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{adminAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/customer/get-all",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "customer", "get-all"]
+                        }
+                    }
+                },
+                {
+                    "name": "Test: User Can Access",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{userAccessToken}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/customer/get-all",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "customer", "get-all"]
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8000",
+            "type": "text",
+            "enabled": true
+        },
+        {
+            "key": "adminEmail",
+            "value": "admin@users.local",
+            "type": "text",
+            "enabled": true
+        },
+        {
+            "key": "adminPassword",
+            "value": "Admin@123",
+            "type": "text",
+            "enabled": true
+        },
+        {
+            "key": "userEmail",
+            "value": "user@users.local",
+            "type": "text",
+            "enabled": true
+        },
+        {
+            "key": "userPassword",
+            "value": "User@123",
+            "type": "text",
+            "enabled": true
+        },
+        {
+            "key": "adminAccessToken",
+            "value": "",
+            "type": "text",
+            "enabled": true
+        },
+        {
+            "key": "adminRefreshToken",
+            "value": "",
+            "type": "text",
+            "enabled": true
+        },
+        {
+            "key": "userAccessToken",
+            "value": "",
+            "type": "text",
+            "enabled": true
+        },
+
+        {
+            "key": "userRefreshToken",
+            "value": "",
+            "type": "string",
+            "enabled": true
+        }
+    ]
+}

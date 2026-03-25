@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class CustomerController {
     public final CustomerService customerService;
 
     @PostMapping("/search")
+    @PreAuthorize("isAuthenticated()")
     public BasePaginationResponse<List<CustomerResponseDTO>> searchCustomer(@RequestBody SearchRequest request) {
         Page<Customer> page = customerService.search(request);
         List<CustomerResponseDTO> responses = page.getContent().stream()
@@ -38,6 +40,7 @@ public class CustomerController {
     }
 
     @GetMapping("/get-all")
+    @PreAuthorize("isAuthenticated()")
     public BaseResponse<List<CustomerResponseDTO>> getAllCustomers() {
         List<Customer> customers = customerService.getAllCustomers();
         List<CustomerResponseDTO> responses = customers.stream()
@@ -47,12 +50,14 @@ public class CustomerController {
     }
 
     @GetMapping("/detail/{id}")
+    @PreAuthorize("isAuthenticated()")
     public BaseResponse<CustomerResponseDTO> getDetailCustomer(@PathVariable("id") Long id) {
         Customer customer = customerService.findDetailsById(id);
         return BaseResponse.ok(CustomerWebMapper.toResponseDTO(customer));
     }
 
     @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAuthenticated()")
     public BaseResponse<CustomerResponseDTO> createCustomer(@Valid @RequestBody CustomerCreateRequestDTO request) {
         Customer customerInput = CustomerWebMapper.toDomain(request);
         Customer savedCustomer = customerService.save(customerInput);
@@ -60,6 +65,7 @@ public class CustomerController {
     }
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("isAuthenticated()")
     public BaseResponse<CustomerResponseDTO> updateCustomer(@PathVariable("id") Long id, @RequestBody CustomerUpdateRequestDTO request) {
         log.info("request to update customer with id:  " + id);
         Customer customerInput = new Customer();
@@ -69,6 +75,7 @@ public class CustomerController {
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("isAuthenticated()")
     public BaseResponse<Void> deleteCustomer(@PathVariable("id") Long id) {
         log.info("request to delete customer with id:  " + id);
         customerService.delete(id);

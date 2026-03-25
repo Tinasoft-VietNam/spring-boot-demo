@@ -70,8 +70,8 @@ public class UserServiceImplementation implements UserService {
         log.info("this is role: " + role);
         user.setRole(role);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setCreated_by("user");
-        user.setUpdated_by("user");
+        user.setCreated_by(getCurrentEmail());
+        user.setUpdated_by(getCurrentEmail());
         user.setCreated_at(new Date());
         user.setUpdated_at(new Date());
         log.info("save user in service: " + user);
@@ -123,7 +123,7 @@ public class UserServiceImplementation implements UserService {
             user.setPassword(passwordEncoder.encode(updateRequest.getPassword()));
         }
 
-        user.setUpdated_by("user");
+        user.setUpdated_by(getCurrentEmail());
         user.setUpdated_at(new Date());
 
         return userRepository.save(user);

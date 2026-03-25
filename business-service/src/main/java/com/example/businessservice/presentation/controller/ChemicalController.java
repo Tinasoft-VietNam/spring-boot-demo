@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,6 +30,7 @@ public class ChemicalController {
     public final ChemicalService chemicalService;
 
     @PostMapping("/search")
+    @PreAuthorize("isAuthenticated()")
     public BasePaginationResponse<List<ChemicalResponseDTO>> searchChemical(@RequestBody SearchRequest request) {
         Page<Chemical> page = chemicalService.search(request);
         List<ChemicalResponseDTO> responses = page.getContent().stream()
@@ -38,6 +40,7 @@ public class ChemicalController {
     }
 
     @GetMapping("/get-all")
+    @PreAuthorize("isAuthenticated()")
     public BaseResponse<List<ChemicalResponseDTO>> getAllChemicals() {
         List<Chemical> chemicals = chemicalService.getAllChemicals();
         List<ChemicalResponseDTO> responses = chemicals.stream()
@@ -47,12 +50,14 @@ public class ChemicalController {
     }
 
     @GetMapping("/detail/{id}")
+    @PreAuthorize("isAuthenticated()")
     public BaseResponse<ChemicalResponseDTO> getDetailChemical(@PathVariable("id") Long id) {
         Chemical chemical = chemicalService.findDetailsById(id);
         return BaseResponse.ok(ChemicalWebMapper.toResponseDTO(chemical));
     }
 
     @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthorize("isAuthenticated()")
     public BaseResponse<ChemicalResponseDTO> createChemical(@Valid @RequestBody ChemicalCreateRequestDTO request) {
         Chemical chemicalInput = ChemicalWebMapper.toDomain(request);
         Chemical savedChemical = chemicalService.save(chemicalInput);
@@ -60,6 +65,7 @@ public class ChemicalController {
     }
 
     @PutMapping("/update/{id}")
+    @PreAuthorize("isAuthenticated()")
     public BaseResponse<ChemicalResponseDTO> updateChemical(@PathVariable("id") Long id, @RequestBody ChemicalUpdateRequestDTO request) {
         log.info("request to update chemical with id:  " + id);
         Chemical chemicalInput = new Chemical();
@@ -69,6 +75,7 @@ public class ChemicalController {
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("isAuthenticated()")
     public BaseResponse<Void> deleteChemical(@PathVariable("id") Long id) {
         log.info("request to delete chemical with id:  " + id);
         chemicalService.delete(id);
