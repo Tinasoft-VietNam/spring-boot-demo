@@ -9,8 +9,6 @@ import com.example.businessservice.presentation.dto.request.CustomerCreateReques
 import com.example.businessservice.presentation.dto.request.CustomerUpdateRequestDTO;
 import com.example.businessservice.presentation.dto.response.CustomerResponseDTO;
 import com.example.businessservice.presentation.mapper.CustomerWebMapper;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +21,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Tag(name = "Customer Controller", description = "Endpoints for managing customers")
 @RestController
 @RequestMapping("/api/customer")
 @RequiredArgsConstructor
@@ -31,7 +28,6 @@ import java.util.stream.Collectors;
 public class CustomerController {
     public final CustomerService customerService;
 
-    @Operation(summary = "Search customers with pagination")
     @PostMapping("/search")
     public BasePaginationResponse<List<CustomerResponseDTO>> searchCustomer(@RequestBody SearchRequest request) {
         Page<Customer> page = customerService.search(request);
@@ -41,7 +37,6 @@ public class CustomerController {
         return BasePaginationResponse.ok(responses, request.getPage(), page.getTotalPages(), (int) page.getTotalElements());
     }
 
-    @Operation(summary = "Get all customers")
     @GetMapping("/get-all")
     public BaseResponse<List<CustomerResponseDTO>> getAllCustomers() {
         List<Customer> customers = customerService.getAllCustomers();
@@ -51,14 +46,12 @@ public class CustomerController {
         return BaseResponse.ok(responses);
     }
 
-    @Operation(summary = "Get customer details by ID")
     @GetMapping("/detail/{id}")
     public BaseResponse<CustomerResponseDTO> getDetailCustomer(@PathVariable("id") Long id) {
         Customer customer = customerService.findDetailsById(id);
         return BaseResponse.ok(CustomerWebMapper.toResponseDTO(customer));
     }
 
-    @Operation(summary = "Create a new customer")
     @PostMapping(value = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResponse<CustomerResponseDTO> createCustomer(@Valid @RequestBody CustomerCreateRequestDTO request) {
         Customer customerInput = CustomerWebMapper.toDomain(request);
@@ -66,7 +59,6 @@ public class CustomerController {
         return BaseResponse.created(CustomerWebMapper.toResponseDTO(savedCustomer));
     }
 
-    @Operation(summary = "Update customer details by ID")
     @PutMapping("/update/{id}")
     public BaseResponse<CustomerResponseDTO> updateCustomer(@PathVariable("id") Long id, @RequestBody CustomerUpdateRequestDTO request) {
         log.info("request to update customer with id:  " + id);
@@ -76,7 +68,6 @@ public class CustomerController {
         return BaseResponse.ok(CustomerWebMapper.toResponseDTO(updatedCustomer));
     }
 
-    @Operation(summary = "Delete customer by ID")
     @DeleteMapping("/delete/{id}")
     public BaseResponse<Void> deleteCustomer(@PathVariable("id") Long id) {
         log.info("request to delete customer with id:  " + id);
