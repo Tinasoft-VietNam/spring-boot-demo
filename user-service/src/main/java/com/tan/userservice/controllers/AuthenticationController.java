@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -61,6 +62,30 @@ public class AuthenticationController {
             return (BaseResponse.badRequest("Invalid refresh token"));
         }
         return BaseResponse.ok(newToken);
+    }
+
+    @PostMapping(value = "/logout")
+    public BaseResponse<Void> logout(
+            @RequestHeader(value = "Authorization", required = false) String authorization,
+            @RequestBody(required = false) RefreshTokenDTO refreshToken
+    ) {
+        boolean accessRevoked = false;
+        boolean refreshRevoked = false;
+
+        if (authorization != null && authorization.startsWith("Bearer ")) {
+            String accessToken = authorization.substring(7);
+            accessRevoked = tokenService.revokeAccessToken(accessToken);
+        }
+
+        if (refreshToken != null && refreshToken.getRefreshToken() != null && !refreshToken.getRefreshToken().isBlank()) {
+            refreshRevoked = tokenService.revokeRefreshToken(refreshToken.getRefreshToken());
+        }
+
+        if (!accessRevoked && !refreshRevoked) {
+            return BaseResponse.badRequest("No valid token provided for revoke");
+        }
+
+        return BaseResponse.ok();
     }
 
     /**

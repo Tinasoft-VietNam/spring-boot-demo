@@ -11,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +26,7 @@ public class PermissionServiceImplementation implements PermissionService {
     RolePermissionMapper rolePermissionMapper;
 
     @Override
+    @Cacheable(cacheNames = "permission:all")
     public List<PermissionResponseDTO> getAllPermissions() {
         return permissionRepository.findAll().stream()
                 .flatMap(permission -> getPermissionDetailsById(permission.getId()).stream())
@@ -32,6 +34,7 @@ public class PermissionServiceImplementation implements PermissionService {
     }
 
     @Override
+    @Cacheable(cacheNames = "permission:detail", key = "#permissionId")
     public List<PermissionResponseDTO> getPermissionDetailsById(Long permissionId) {
         List<RolePermission> rolePermissions = rolePermissionRepository.findByPermissionId(permissionId);
 

@@ -15,6 +15,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,6 +37,7 @@ public class RoleServiceImplementation implements RoleService {
     RoleMapper roleMapper;
 
     @Override
+    @Cacheable(cacheNames = "role:all")
     public List<RoleResponseDTO> getAllRoles() {
         return roleRepository.findAll().stream().map(roleMapper::convertToRoleResponse).toList();
     }
@@ -45,6 +49,7 @@ public class RoleServiceImplementation implements RoleService {
     }
 
     @Override
+    @Cacheable(cacheNames = "role:detail", key = "#roleId")
     public RoleResponseDTO findDetailsById(Long roleId) {
         Role role = findById(roleId);
 
@@ -55,6 +60,11 @@ public class RoleServiceImplementation implements RoleService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "role:all", allEntries = true),
+            @CacheEvict(cacheNames = "role:detail", allEntries = true),
+            @CacheEvict(cacheNames = "authz:matrix", allEntries = true)
+    })
     public Role save(RoleCreateRequestDTO createRequest) {
         if (roleRepository.findByName(createRequest.getName()).isPresent()) {
             throw new LogicException("Role's already exist");
@@ -80,6 +90,11 @@ public class RoleServiceImplementation implements RoleService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "role:all", allEntries = true),
+            @CacheEvict(cacheNames = "role:detail", key = "#roleId"),
+            @CacheEvict(cacheNames = "authz:matrix", allEntries = true)
+    })
     public Role update(Long roleId, RoleUpdateRequestDTO updateRequest) {
         Role role = findById(roleId);
         String nameToSlug = updateRequest.getName().replaceAll(" ", "-").toLowerCase();
@@ -96,6 +111,11 @@ public class RoleServiceImplementation implements RoleService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "role:all", allEntries = true),
+            @CacheEvict(cacheNames = "role:detail", key = "#roleId"),
+            @CacheEvict(cacheNames = "authz:matrix", allEntries = true)
+    })
     public void delete(Long roleId) {
         Role role = findById(roleId);
         roleRepository.delete(role);

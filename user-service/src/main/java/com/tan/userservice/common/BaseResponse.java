@@ -1,6 +1,7 @@
 package com.tan.userservice.common;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import java.io.Serializable;
 @Data
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BaseResponse<T> implements Serializable {
 
     private T data;
@@ -82,4 +84,3 @@ public class BaseResponse<T> implements Serializable {
         return new BaseResponse<>(data, 500, message);
     }
 }
-

@@ -121,7 +121,7 @@
                                     "    if (token) {",
                                     "        pm.environment.set('adminAccessToken', token);",
                                     "    }",
-                                    "    console.log('✓ Token refreshed');",
+                                    "    console.log('Token refreshed');",
                                     "}"
                                 ]
                             }
@@ -139,6 +139,76 @@
                             "raw": "{{baseUrl}}/api/auth/refresh-token",
                             "host": ["{{baseUrl}}"],
                             "path": ["api", "auth", "refresh-token"]
+                        }
+                    }
+                },
+                {
+                    "name": "Admin Logout",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    pm.environment.unset('adminAccessToken');",
+                                    "    pm.environment.unset('adminRefreshToken');",
+                                    "    console.log('Admin logged out');",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"refreshToken\": \"{{adminRefreshToken}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/logout",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "logout"]
+                        }
+                    }
+                },
+                {
+                    "name": "User Logout",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    pm.environment.unset('userAccessToken');",
+                                    "    pm.environment.unset('userRefreshToken');",
+                                    "    console.log('User logged out');",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"refreshToken\": \"{{userRefreshToken}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/logout",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["api", "auth", "logout"]
                         }
                     }
                 }

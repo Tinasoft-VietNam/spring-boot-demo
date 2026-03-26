@@ -31,7 +31,7 @@ public class Role extends BaseEntity implements Serializable {
     @EqualsAndHashCode.Exclude
     @ToString.Exclude
     @JsonIgnore
-    @JsonIgnoreProperties(value = {"role"})
+    @JsonIgnoreProperties(value = { "role" })
     private List<User> users;
 
     @OneToMany(mappedBy = "role")
@@ -40,6 +40,7 @@ public class Role extends BaseEntity implements Serializable {
     @JsonIgnore
     private List<RolePermission> rolePermissions;
 
+    @JsonIgnore
     public List<String> getPermissionKeys() {
         return rolePermissions.stream()
                 .map(RolePermission::getPermission)

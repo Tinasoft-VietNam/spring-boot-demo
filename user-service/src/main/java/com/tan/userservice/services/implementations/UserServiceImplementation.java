@@ -19,6 +19,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -59,6 +62,10 @@ public class UserServiceImplementation implements UserService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "user:me", allEntries = true),
+            @CacheEvict(cacheNames = "authz:matrix", allEntries = true)
+    })
     public User save(UserCreateRequestDTO request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new ConflictException("User's already exist");
@@ -79,6 +86,8 @@ public class UserServiceImplementation implements UserService {
         return userRepository.save(user);
     }
 
+    @Override
+    @Cacheable(cacheNames = "user:me", key = "T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getName()")
     public UserResponseDTO currentUserDetails() {
         String email = getCurrentEmail();
 
@@ -107,6 +116,10 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "user:me", allEntries = true),
+            @CacheEvict(cacheNames = "authz:matrix", allEntries = true)
+    })
     public User update(Long userId, UserUpdateRequestDTO updateRequest) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RecordNotFoundException("Không tìm thấy người dùng id = " + userId));
@@ -131,6 +144,10 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "user:me", key = "T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getName()"),
+            @CacheEvict(cacheNames = "authz:matrix", key = "T(org.springframework.security.core.context.SecurityContextHolder).getContext().getAuthentication().getName()")
+    })
     public UserResponseDTO updateMyProfile(ProfileUpdateRequestDTO request) {
         String email = getCurrentEmail();
         User user = userRepository.findByEmail(email)
@@ -159,6 +176,10 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "user:me", allEntries = true),
+            @CacheEvict(cacheNames = "authz:matrix", allEntries = true)
+    })
     public void delete(Long userId) {
         try {
             userRepository.deleteById(userId);
